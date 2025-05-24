@@ -44,11 +44,11 @@ Sebelum menjalankan bot, Anda perlu menyiapkan dua file konfigurasi di direktori
     [
       {
         "Address": "0xWalletAddressKamu1",
-        "deviceHash": 1234567890123
+        "deviceHash": "1234567890123"
       },
       {
         "Address": "0xWalletAddressKamu2",
-        "deviceHash": 9876543210987
+        "deviceHash": "9876543210987"
       }
     ]
     ```
