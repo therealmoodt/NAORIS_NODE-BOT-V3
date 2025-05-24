@@ -1,9 +1,6 @@
 ```markdown
 # Naoris Protocol Automation Bot v2.0
 
-<p align="center">
-  <img src="https://via.placeholder.com/800x200.png?text=Naoris+Protocol+Automation+Bot+v2.0+by+@AirdropFamilyIDN" alt="Naoris Bot Banner" width="600"/>
-</p>
 
 Bot otomatisasi untuk berinteraksi dengan Naoris Protocol, dibuat oleh **@AirdropFamilyIDN**.
 Skrip ini dirancang untuk mengotomatiskan berbagai tugas terkait akun Naoris Protocol, seperti menghasilkan token, menambahkan ke whitelist, aktivasi perangkat, melakukan ping, dan memeriksa detail wallet.
