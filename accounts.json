@@ -1,10 +1,10 @@
 [
   {
     "Address": "0xWalletAddressKamu1",
-    "deviceHash": 1234567890123
+    "deviceHash": "devicehash"
   },
   {
     "Address": "0xWalletAddressKamu2",
-    "deviceHash": 9876543210987
+    "deviceHash": "devicehash"
   }
 ]
