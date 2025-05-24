@@ -2,7 +2,7 @@
 # Naoris Protocol Automation Bot v2.0
 
 
-Bot otomatisasi untuk berinteraksi dengan Naoris Protocol, dibuat oleh **@AirdropFamilyIDN**.
+Bot otomatisasi untuk berinteraksi dengan Naoris Protocol.
 Skrip ini dirancang untuk mengotomatiskan berbagai tugas terkait akun Naoris Protocol, seperti menghasilkan token, menambahkan ke whitelist, aktivasi perangkat, melakukan ping, dan memeriksa detail wallet.
 
 ## ✨ Fitur Utama
@@ -76,7 +76,6 @@ Sebelum menjalankan bot, Anda perlu menyiapkan dua file konfigurasi di direktori
     ```bash
     python main.py
     ```
-    (Ganti `nama_script_anda.py` dengan nama file skrip Python Anda, misalnya `naoris_bot.py`).
 
 4.  Bot akan menanyakan apakah Anda ingin menggunakan proxy. Jawab `y` (Ya) atau `n` (Tidak).
 5.  Bot akan mulai memproses setiap akun secara asinkron.
