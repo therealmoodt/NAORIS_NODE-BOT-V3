@@ -74,7 +74,7 @@ Sebelum menjalankan bot, Anda perlu menyiapkan dua file konfigurasi di direktori
 3.  Jalankan skrip dari terminal:
 
     ```bash
-    python nama_script_anda.py
+    python main.py
     ```
     (Ganti `nama_script_anda.py` dengan nama file skrip Python Anda, misalnya `naoris_bot.py`).
 
@@ -104,10 +104,6 @@ Sebelum menjalankan bot, Anda perlu menyiapkan dua file konfigurasi di direktori
 * Penulis tidak bertanggung jawab atas kerugian atau masalah apa pun yang mungkin timbul dari penggunaan skrip ini, termasuk namun tidak terbatas pada pemblokiran akun atau kehilangan aset.
 * Perubahan pada API Naoris Protocol dapat menyebabkan bot ini tidak berfungsi. Selalu uji coba pada akun tes terlebih dahulu jika memungkinkan.
 
-## 🙏 Kredit
-
-* **Dibuat oleh**: @AirdropFamilyIDN
-* Terima kasih kepada komunitas dan kontributor (jika ada).
 
 ---
 ```
