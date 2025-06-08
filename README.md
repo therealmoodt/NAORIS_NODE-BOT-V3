@@ -1,5 +1,5 @@
 
-# Naoris Protocol Automation Bot v2.0
+# Naoris Protocol Automation Bot v3.0
 
 
 Automation bot for interacting with Naoris Protocol.
