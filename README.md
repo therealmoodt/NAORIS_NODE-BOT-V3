@@ -2,44 +2,44 @@
 # Naoris Protocol Automation Bot v2.0
 
 
-Bot otomatisasi untuk berinteraksi dengan Naoris Protocol.
-Skrip ini dirancang untuk mengotomatiskan berbagai tugas terkait akun Naoris Protocol, seperti menghasilkan token, menambahkan ke whitelist, aktivasi perangkat, melakukan ping, dan memeriksa detail wallet.
+Automation bot for interacting with Naoris Protocol.
+This script is designed to automate various account-related tasks such as generating tokens, adding to the whitelist, activating devices, sending pings and checking wallet details.
 
-## ✨ Fitur Utama
+## ✨ Key Features
 
-* 🤖 **Otomatisasi Penuh**: Dari pembuatan token hingga ping berkala.
-* 👥 **Manajemen Multi-Akun**: Mendukung banyak akun dari file `accounts.json`.
-* 🔄 **Dukungan Proxy**: Opsi untuk menggunakan proxy dari `proxies.txt` dengan rotasi sederhana.
-* 🔑 **Manajemen Token**: Pembuatan token awal dan refresh token otomatis.
-* 📝 **Whitelist Otomatis**: Menambahkan URL jaringan ke whitelist akun.
-* 💡 **Aktivasi Perangkat**: Mengelola status aktivasi perangkat (ON/OFF).
-* 💓 **Ping & Produksi Pesan**: Mengirim ping dan inisiasi produksi pesan secara berkala.
-* 📊 **Detail Wallet**: Memeriksa total pendapatan (poin) secara periodik.
-* 🎨 **Logging Berwarna**: Output terminal yang mudah dibaca dengan status (SUCCESS, INFO, WARNING, ERROR).
-* 🛡️ **Penanganan Error & Retry**: Upaya coba lagi (retry) untuk operasi API yang gagal.
-* ⚙️ **Konfigurasi Mudah**: Pengaturan akun dan proxy melalui file eksternal.
+* 🤖 **Full Automation**: From token generation to periodic pings.
+* 👥 **Multi-Account Management**: Supports multiple accounts from `accounts.json`.
+* 🔄 **Proxy Support**: Optionally use proxies from `proxies.txt` with simple rotation.
+* 🔑 **Token Management**: Initial token creation and automatic refresh.
+* 📝 **Automatic Whitelisting**: Adds the network URL to the account whitelist.
+* 💡 **Device Activation**: Manages device activation status (ON/OFF).
+* 💓 **Ping & Message Production**: Sends pings and initiates message production periodically.
+* 📊 **Wallet Details**: Checks total earnings (points) periodically.
+* 🎨 **Colored Logging**: Easy‑to‑read terminal output with status (SUCCESS, INFO, WARNING, ERROR).
+* 🛡️ **Error Handling & Retry**: Retries failed API operations.
+* ⚙️ **Simple Configuration**: Configure accounts and proxies via external files.
 
-## 📋 Kebutuhan Sistem
+## 📋 System Requirements
 
 * Python 3.10+
 * Pip (Python package installer)
 
-## 🛠️ Instalasi Dependensi
+## 🛠️ Installing Dependencies
 
-Pastikan Anda sudah menginstal Python dan Pip. Kemudian, instal dependensi yang dibutuhkan dengan menjalankan perintah berikut di terminal:
+Ensure you have Python and Pip installed. Then install the required dependencies by running the following command in your terminal:
 
 ```bash
 pip install pytz colorama curl_cffi fake_useragent
 ```
 
-## ⚙️ Konfigurasi
+## ⚙️ Configuration
 
-Sebelum menjalankan bot, Anda perlu menyiapkan dua file konfigurasi di direktori yang sama dengan skrip:
+Before running the bot you need to prepare two configuration files in the same directory as the script:
 
 1.  **`accounts.json`**:
-    File ini berisi daftar akun Naoris Protocol Anda. Formatnya adalah JSON array dari objek, di mana setiap objek memiliki `Address` (alamat wallet) dan `deviceHash`.
+    This file contains a list of your Naoris Protocol accounts. The format is a JSON array of objects, each containing `Address` (wallet address) and `deviceHash`.
 
-    Contoh `accounts.json`:
+    Example `accounts.json`:
     ```json
     [
       {
@@ -52,57 +52,56 @@ Sebelum menjalankan bot, Anda perlu menyiapkan dua file konfigurasi di direktori
       }
     ]
     ```
-    * Ganti `0xWalletAddressKamu...` dengan alamat wallet Ethereum Anda.
-    * `deviceHash` adalah ID unik perangkat; skrip ini mengasumsikan `deviceHash` adalah integer yang valid dan unik per akun.
+    * Replace `0xWalletAddressKamu...` with your Ethereum wallet address.
+    * `deviceHash` is a unique device ID; the script assumes `deviceHash` is a valid integer unique to each account.
 
-2.  **`proxies.txt`** (Opsional):
-    Jika Anda ingin menggunakan proxy, buat file ini dan isi dengan daftar proxy, satu proxy per baris.
-    Format: `ip:port` atau `user:pass@ip:port` atau `http://user:pass@ip:port`.
-    Jika file ini tidak ada atau kosong, dan Anda memilih untuk tidak menggunakan proxy saat bot dijalankan, bot akan berjalan tanpa proxy.
+2.  **`proxies.txt`** (Optional):
+    If you want to use proxies, create this file and fill it with a list of proxies, one per line.
+    Format: `ip:port` or `user:pass@ip:port` or `http://user:pass@ip:port`.
+    If this file does not exist or is empty and you choose not to use a proxy when the bot runs, it will run without proxies.
 
-    Contoh `proxies.txt`:
+    Example `proxies.txt`:
     ```
     192.168.1.1:8080
     user1:pass1@proxy.example.com:3128
     [http://anotheruser:anotherpass@123.123.123.123:8888](http://anotheruser:anotherpass@123.123.123.123:8888)
     ```
 
-## 🚀 Cara Menjalankan Bot
+## 🚀 Running the Bot
 
-1.  Pastikan semua dependensi sudah terinstal.
-2.  Siapkan file `accounts.json` (dan `proxies.txt` jika diperlukan).
-3.  Jalankan skrip dari terminal:
+1.  Ensure all dependencies are installed.
+2.  Prepare the `accounts.json` file (and `proxies.txt` if needed).
+3.  Run the script from your terminal:
 
     ```bash
     python main.py
     ```
 
-4.  Bot akan menanyakan apakah Anda ingin menggunakan proxy. Jawab `y` (Ya) atau `n` (Tidak).
-5.  Bot akan mulai memproses setiap akun secara asinkron.
+4.  The bot will ask whether you want to use proxies. Answer `y` (Yes) or `n` (No).
+5.  The bot will then begin processing each account asynchronously.
 
-## 📜 Cara Kerja Umum per Akun
+## 📜 General Workflow per Account
 
-1.  **Inisialisasi**: Memuat data akun dan proxy (jika digunakan).
-2.  **Pembuatan/Refresh Token**:
-    * Jika token belum ada, bot akan mencoba membuat token baru.
-    * Jika token sudah ada, bot akan menjalankan tugas refresh token secara berkala (default setiap 30 menit setelah 25 menit awal).
-3.  **Whitelist**: Menambahkan URL jaringan (`naorisprotocol.network`) ke whitelist.
-4.  **Aktivasi Perangkat**:
-    * Secara periodik, bot akan mencoba menonaktifkan sesi yang ada (jika ada) untuk memastikan state bersih.
-    * Kemudian mengaktifkan perangkat (state "ON").
-5.  **Operasi Berkala (jika perangkat aktif dan token valid)**:
-    * **Initiate Message Production**: Mengirim permintaan inisiasi produksi pesan ke `beat.naorisprotocol.network` (default setiap 10 menit).
-    * **Perform Ping**: Melakukan ping ke server `beat.naorisprotocol.network` (default setiap 60 detik).
-6.  **Detail Wallet**: Memeriksa detail wallet (total pendapatan) secara berkala (default setiap 15 menit setelah 1 menit awal).
-7.  Semua operasi utama (aktivasi, ping, initiate message) dilakukan dalam loop utama dengan jeda antar siklus pengecekan. Task untuk refresh token dan cek detail wallet berjalan secara paralel dengan intervalnya masing-masing.
+1.  **Initialization**: Loads account data and proxies (if used).
+2.  **Token Generation/Refresh**:
+    * If no token exists, the bot tries to generate a new one.
+    * If a token is already present, it refreshes the token periodically (default every 30 minutes after an initial 25-minute delay).
+3.  **Whitelist**: Adds the network URL (`naorisprotocol.network`) to the whitelist.
+4.  **Device Activation**:
+    * Periodically attempts to disable any existing session to ensure a clean state.
+    * Then activates the device (state "ON").
+5.  **Periodic Operations (if the device is active and token valid)**:
+    * **Initiate Message Production**: Sends a request to `beat.naorisprotocol.network` (default every 10 minutes).
+    * **Perform Ping**: Pings the `beat.naorisprotocol.network` server (default every 60 seconds).
+6.  **Wallet Details**: Checks wallet details (total earnings) periodically (default every 15 minutes after an initial 1-minute delay).
+7.  All main operations (activation, ping, initiate message) run in a main loop with delays between cycles. Tasks for refreshing the token and checking wallet details run in parallel with their own intervals.
 
 ## ⚠️ Disclaimer
 
-* Bot ini disediakan sebagaimana adanya. **Gunakan dengan risiko Anda sendiri (Do With Your Own Risk - DWYOR)**.
-* Penggunaan bot untuk mengotomatisasi interaksi dengan platform apa pun mungkin melanggar Ketentuan Layanan (ToS) platform tersebut. Pastikan Anda memahami dan menerima risikonya.
-* Penulis tidak bertanggung jawab atas kerugian atau masalah apa pun yang mungkin timbul dari penggunaan skrip ini, termasuk namun tidak terbatas pada pemblokiran akun atau kehilangan aset.
-* Perubahan pada API Naoris Protocol dapat menyebabkan bot ini tidak berfungsi. Selalu uji coba pada akun tes terlebih dahulu jika memungkinkan.
+* This bot is provided as is. **Use at your own risk (Do With Your Own Risk - DWYOR).**
+* Automating interactions with any platform may violate its Terms of Service. Make sure you understand and accept the risk.
+* The author is not responsible for any loss or issues that may arise from using this script, including but not limited to account bans or asset loss.
+* Changes to the Naoris Protocol API can cause this bot to stop working. Always test on a demo account first if possible.
 
 
 ---
-```
