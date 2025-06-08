@@ -14,7 +14,7 @@ This script is designed to automate various account-related tasks such as genera
 * 📝 **Automatic Whitelisting**: Adds the network URL to the account whitelist.
 * 💡 **Device Activation**: Manages device activation status (ON/OFF).
 * 💓 **Ping & Message Production**: Sends pings and initiates message production periodically.
-* 📊 **Wallet Details**: Checks total earnings (points) periodically.
+* 📊 **Wallet Details**: Checks total earnings (points) periodically and prints each account's token with an aggregated node total.
 * 🎨 **Colored Logging**: Easy‑to‑read terminal output with status (SUCCESS, INFO, WARNING, ERROR).
 * 🛡️ **Error Handling & Retry**: Retries failed API operations.
 * ⚙️ **Simple Configuration**: Configure accounts and proxies via external files.

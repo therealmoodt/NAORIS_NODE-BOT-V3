@@ -45,6 +45,7 @@ class NaorisProtocolAutomation:
         self.account_proxies: Dict[str, Optional[str]] = {}
         self.access_tokens: Dict[str, str] = {}
         self.refresh_tokens: Dict[str, str] = {}
+        self.wallet_balances: Dict[str, float] = {}
 
         self.accounts_file = "accounts.json"
         self.proxy_file = "proxies.txt"
@@ -468,6 +469,14 @@ class NaorisProtocolAutomation:
             
             if isinstance(details, dict) and not details.get("error") and "message" in details :
                 total_earnings = details["message"].get("totalEarnings", "N/A")
+                try:
+                    self.wallet_balances[original_address] = float(total_earnings)
+                except (TypeError, ValueError):
+                    pass
+                total_node = sum(self.wallet_balances.values())
+                self.log(f"[TOTAL SOLDE NODE] {total_node} PTS", level="INFO")
+                token_value = self.access_tokens.get(original_address, "N/A")
+                self.log_account_specific(masked_address, "", level="INFO", proxy_info=proxy_info_str, status_msg=f"Token: {token_value}")
                 self.log_account_specific(masked_address, "", level="INFO", proxy_info=proxy_info_str, status_msg=f"Total Earnings: {total_earnings} PTS")
             elif isinstance(details, dict) and details.get("error"):
                 response_text = details.get("response_text", "")
