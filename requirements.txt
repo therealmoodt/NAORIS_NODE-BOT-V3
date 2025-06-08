@@ -1,0 +1,4 @@
+pytz
+colorama
+curl_cffi
+fake_useragent
