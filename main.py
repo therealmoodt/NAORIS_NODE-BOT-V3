@@ -260,11 +260,11 @@ class NaorisProtocolAutomation:
             elif isinstance(response, dict) and response.get("status_code") == 401:
                 self.log_account_specific(masked_address, "", level="WARNING", status_msg="Refresh Token Failed (401). Trying to generate a new token...")
                 new_tokens = await self.process_generate_new_token(masked_address, original_address, use_proxy_flag, proxy_to_use=proxy)
-                    if new_tokens:
-                        return new_tokens # This is the successful dict from process_generate_new_token
-                    else: # Failed to generate a new token
+                if new_tokens:
+                    return new_tokens  # This is the successful dict from process_generate_new_token
+                else:  # Failed to generate a new token
                     self.log_account_specific(masked_address, "", level="ERROR", status_msg="Failed to generate new token after refresh failed (401).")
-                    return None # Error final untuk refresh ini
+                    return None  # Error final untuk refresh ini
             
             error_msg = response.get("message", "Unknown error") if isinstance(response, dict) else "Non-dict/No response"
             log_level_retry = "WARNING" if attempt < retries - 1 else "ERROR"
@@ -632,6 +632,6 @@ if __name__ == "__main__":
     except Exception as e:
         bot.log(f"Unexpected error at top level: {e}", level="ERROR")
         import traceback
-        traceback.print_exc() # Print traceback to debug unexpected errors
+        traceback.print_exc()  # Print traceback to debug unexpected errors
     finally:
         bot.log("Bot Finished.", level="INFO")
