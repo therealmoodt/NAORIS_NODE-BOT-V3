@@ -46,6 +46,8 @@ class NaorisProtocolAutomation:
         self.access_tokens: Dict[str, str] = {}
         self.refresh_tokens: Dict[str, str] = {}
         self.wallet_balances: Dict[str, float] = {}
+        self.wallet_details_count: int = 0
+        self.total_accounts: int = 0
 
         self.accounts_file = "accounts.json"
         self.proxy_file = "proxies.txt"
@@ -188,6 +190,16 @@ class NaorisProtocolAutomation:
                 return False
             else:
                 self.log("Invalid input. Please enter 'y' for Yes or 'n' for No.", level="WARNING")
+
+    def _log_total_wallet_balance(self):
+        self.wallet_details_count += 1
+        if self.total_accounts and self.wallet_details_count >= self.total_accounts:
+            total_node = sum(self.wallet_balances.values())
+            separator = "-" * 60
+            print(C_SEPARATOR + Style.BRIGHT + separator + Style.RESET_ALL)
+            self.log(f"[TOTAL SOLDE WALLET] {total_node} PTS", level="INFO")
+            print(C_SEPARATOR + Style.BRIGHT + separator + Style.RESET_ALL)
+            self.wallet_details_count = 0
 
     async def _request(self, method: str, url: str, headers: Optional[Dict] = None, data: Optional[Dict] = None, 
                        json_payload: Optional[Dict] = None, proxy: Optional[str] = None, impersonate: str = "chrome110", timeout: int = 60) -> Optional[Any]:
@@ -473,8 +485,6 @@ class NaorisProtocolAutomation:
                     self.wallet_balances[original_address] = float(total_earnings)
                 except (TypeError, ValueError):
                     pass
-                total_node = sum(self.wallet_balances.values())
-                self.log(f"[TOTAL SOLDE NODE] {total_node} PTS", level="INFO")
                 token_value = self.access_tokens.get(original_address, "N/A")
                 self.log_account_specific(masked_address, "", level="INFO", proxy_info=proxy_info_str, status_msg=f"Token: {token_value}")
                 self.log_account_specific(masked_address, "", level="INFO", proxy_info=proxy_info_str, status_msg=f"Total Earnings: {total_earnings} PTS")
@@ -488,7 +498,8 @@ class NaorisProtocolAutomation:
                     self.log_account_specific(masked_address, "", level="ERROR", proxy_info=proxy_info_str, status_msg=f"Failed to fetch wallet details: {details.get('message')}")
             else: # Respons tidak dikenal
                 self.log_account_specific(masked_address, "", level="WARNING", proxy_info=proxy_info_str, status_msg="Failed to fetch wallet details (unknown response).")
-            
+
+            self._log_total_wallet_balance()
             await asyncio.sleep(15 * 60) # Interval cek detail
 
     async def main_account_operations_task(self, original_address: str, device_hash: int, use_proxy_flag: bool):
@@ -600,6 +611,7 @@ class NaorisProtocolAutomation:
         if not accounts:
             self.log("No accounts loaded. Bot stopping.", level="ERROR")
             return
+        self.total_accounts = len(accounts)
 
         use_proxy_flag = self.ask_use_proxy()
 
