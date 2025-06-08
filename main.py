@@ -634,4 +634,4 @@ if __name__ == "__main__":
         import traceback
         traceback.print_exc() # Cetak traceback untuk debug error tak terduga
     finally:
-        bot.log("Bot Selesai.", level="INFO")
+        bot.log("Bot Finished.", level="INFO")
