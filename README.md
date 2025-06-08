@@ -14,7 +14,7 @@ This script is designed to automate various account-related tasks such as genera
 * 📝 **Automatic Whitelisting**: Adds the network URL to the account whitelist.
 * 💡 **Device Activation**: Manages device activation status (ON/OFF).
 * 💓 **Ping & Message Production**: Sends pings and initiates message production periodically.
-* 📊 **Wallet Details**: Checks total earnings (points) periodically and prints each account's token with an aggregated node total.
+* 📊 **Wallet Details**: Checks total earnings (points) periodically and prints each account's token with an aggregated node total. [NEW]
 * 🎨 **Colored Logging**: Easy‑to‑read terminal output with status (SUCCESS, INFO, WARNING, ERROR).
 * 🛡️ **Error Handling & Retry**: Retries failed API operations.
 * ⚙️ **Simple Configuration**: Configure accounts and proxies via external files.
@@ -98,8 +98,8 @@ Before running the bot you need to prepare two configuration files in the same d
 
 ## 📈 Improvement Log
 
-* 🔎 **Token Logging**: Displays each account's token when loaded and whenever wallet details are fetched.
-* 💰 **Total Wallet Balance**: After retrieving wallet details for all accounts, prints the combined balance across nodes.
+* 🔎 **Token Logging**: Displays each account's token when loaded and whenever wallet details are fetched. [NEW]
+* 💰 **Total Wallet Balance**: After retrieving wallet details for all accounts, prints the combined balance across nodes. [NEW]
 
 ## ⚠️ Disclaimer
 
