@@ -102,12 +102,12 @@ class NaorisProtocolAutomation:
     def load_accounts_from_file(self) -> List[Dict[str, Any]]:
         try:
             if not os.path.exists(self.accounts_file):
-                self.log(f"File akun '{self.accounts_file}' tidak ditemukan.", level="ERROR")
+                self.log(f"Accounts file '{self.accounts_file}' not found.", level="ERROR")
                 return []
             with open(self.accounts_file, 'r') as file:
                 accounts_data = json.load(file)
             if not isinstance(accounts_data, list):
-                self.log(f"Format data di '{self.accounts_file}' tidak valid. Harusnya list.", level="ERROR")
+                self.log(f"Data format in '{self.accounts_file}' is invalid. Expected a list.", level="ERROR")
                 return []
             
             valid_accounts = []
@@ -119,35 +119,35 @@ class NaorisProtocolAutomation:
                         if "token" in acc:
                             print(f"Token for {self._mask_address(acc['Address'])}: {acc['token']}")
                     except ValueError:
-                        self.log(f"Akun ke-{acc_idx+1} memiliki deviceHash tidak valid (harus integer): {C_WARNING}{acc.get('deviceHash')}{C_ERROR}", level="ERROR")
+                        self.log(f"Account #{acc_idx+1} has an invalid deviceHash (must be integer): {C_WARNING}{acc.get('deviceHash')}{C_ERROR}", level="ERROR")
                 else:
-                    self.log(f"Akun ke-{acc_idx+1} di '{self.accounts_file}' tidak memiliki format yang benar (membutuhkan 'Address' dan 'deviceHash').", level="WARNING")
+                    self.log(f"Account #{acc_idx+1} in '{self.accounts_file}' does not have the correct format (requires 'Address' and 'deviceHash').", level="WARNING")
             
             if valid_accounts:
-                self.log(f"Berhasil memuat {len(valid_accounts)} akun valid dari '{self.accounts_file}'.", level="INFO")
+                self.log(f"Loaded {len(valid_accounts)} valid accounts from '{self.accounts_file}'.", level="INFO")
             return valid_accounts
         except json.JSONDecodeError:
-            self.log(f"Gagal mendekode JSON dari '{self.accounts_file}'. Pastikan formatnya benar.", level="ERROR")
+            self.log(f"Failed to decode JSON from '{self.accounts_file}'. Ensure the format is correct.", level="ERROR")
             return []
         except Exception as e:
-            self.log(f"Error saat memuat akun: {e}", level="ERROR")
+            self.log(f"Error while loading accounts: {e}", level="ERROR")
             return []
 
     async def load_proxies_from_local_file(self):
         try:
             if not os.path.exists(self.proxy_file):
-                self.log(f"File proxy '{self.proxy_file}' tidak ditemukan.", level="ERROR")
+                self.log(f"Proxy file '{self.proxy_file}' not found.", level="ERROR")
                 self.proxies = []
                 return
             with open(self.proxy_file, 'r') as f:
                 self.proxies = [line.strip() for line in f if line.strip()]
 
             if not self.proxies:
-                self.log(f"Tidak ada proxy yang dimuat dari '{self.proxy_file}'.", level="WARNING")
+                self.log(f"No proxies loaded from '{self.proxy_file}'.", level="WARNING")
             else:
-                 self.log(f"Total proxy yang dimuat dari '{self.proxy_file}': {len(self.proxies)}", level="SUCCESS")
+                 self.log(f"Total proxies loaded from '{self.proxy_file}': {len(self.proxies)}", level="SUCCESS")
         except Exception as e:
-            self.log(f"Gagal memuat proxy dari '{self.proxy_file}': {e}", level="ERROR")
+            self.log(f"Failed to load proxies from '{self.proxy_file}': {e}", level="ERROR")
             self.proxies = []
 
     def _get_proxy_url(self, proxy_str: str) -> Optional[str]:
@@ -175,16 +175,16 @@ class NaorisProtocolAutomation:
     def ask_use_proxy(self) -> bool:
         timestamp = datetime.now(wib).strftime('%Y-%m-%d %H:%M:%S %Z')
         while True:
-            print(f"{C_TEXT}[{timestamp}]{Style.RESET_ALL} {C_INPUT}[INPUT]{Style.RESET_ALL} {C_INPUT}Apakah Anda ingin menggunakan proxy dari '{self.proxy_file}'? (y/n): {Style.RESET_ALL}", end="")
+            print(f"{C_TEXT}[{timestamp}]{Style.RESET_ALL} {C_INPUT}[INPUT]{Style.RESET_ALL} {C_INPUT}Do you want to use proxies from '{self.proxy_file}'? (y/n): {Style.RESET_ALL}", end="")
             choice = input().strip().lower()
             if choice == 'y':
-                self.log("Menggunakan proxy.", level="INFO")
+                self.log("Using proxy.", level="INFO")
                 return True
             elif choice == 'n':
-                self.log("Tidak menggunakan proxy.", level="INFO")
+                self.log("Not using proxy.", level="INFO")
                 return False
             else:
-                self.log("Input tidak valid. Harap masukkan 'y' untuk Ya atau 'n' untuk Tidak.", level="WARNING")
+                self.log("Invalid input. Please enter 'y' for Yes or 'n' for No.", level="WARNING")
 
     async def _request(self, method: str, url: str, headers: Optional[Dict] = None, data: Optional[Dict] = None, 
                        json_payload: Optional[Dict] = None, proxy: Optional[str] = None, impersonate: str = "chrome110", timeout: int = 60) -> Optional[Any]:
@@ -235,18 +235,18 @@ class NaorisProtocolAutomation:
             if isinstance(response, dict) and not response.get("error"):
                 return response
             elif isinstance(response, dict) and response.get("status_code") == 404:
-                 self.log_account_specific(masked_address, "", level="ERROR", status_msg=f"Generate Token Gagal (404): Pastikan akun terdaftar & selesaikan task.")
+                 self.log_account_specific(masked_address, "", level="ERROR", status_msg=f"Generate Token Failed (404): Ensure the account is registered and tasks are completed.")
                  return None
             
             error_msg = response.get("message", "Unknown error") if isinstance(response, dict) else "Non-dict/No response"
             # Warning untuk retry, Error untuk final
             log_level_retry = "WARNING" if attempt < retries - 1 else "ERROR"
-            self.log_account_specific(masked_address, "", level=log_level_retry, status_msg=f"Generate Token Gagal (attempt {attempt+1}/{retries}): {error_msg}{'. Retry...' if attempt < retries -1 else '. Gagal Final.'}")
+            self.log_account_specific(masked_address, "", level=log_level_retry, status_msg=f"Generate Token Failed (attempt {attempt+1}/{retries}): {error_msg}{'. Retrying...' if attempt < retries -1 else '. Final failure.'}")
             if attempt < retries - 1:
                 await asyncio.sleep(5)
-            else: # Gagal setelah semua retry
+            else: # Failed after all retries
                 return None
-        return None # Seharusnya tidak tercapai jika loop berjalan
+        return None # Should not be reached if the loop executes
 
     async def refresh_token_api(self, masked_address: str, original_address: str, current_refresh_token: str, proxy: Optional[str], use_proxy_flag: bool, retries: int = 3) -> Optional[Dict]:
         url = f"{self.base_api_url}/sec-api/auth/refresh"
@@ -258,17 +258,17 @@ class NaorisProtocolAutomation:
             if isinstance(response, dict) and not response.get("error"):
                 return response
             elif isinstance(response, dict) and response.get("status_code") == 401:
-                self.log_account_specific(masked_address, "", level="WARNING", status_msg="Refresh Token Gagal (401). Mencoba generate token baru...")
+                self.log_account_specific(masked_address, "", level="WARNING", status_msg="Refresh Token Failed (401). Trying to generate a new token...")
                 new_tokens = await self.process_generate_new_token(masked_address, original_address, use_proxy_flag, proxy_to_use=proxy)
-                if new_tokens:
-                    return new_tokens # Ini adalah dict sukses dari process_generate_new_token
-                else: # Gagal generate token baru
-                    self.log_account_specific(masked_address, "", level="ERROR", status_msg="Gagal generate token baru setelah refresh gagal (401).")
+                    if new_tokens:
+                        return new_tokens # This is the successful dict from process_generate_new_token
+                    else: # Failed to generate a new token
+                    self.log_account_specific(masked_address, "", level="ERROR", status_msg="Failed to generate new token after refresh failed (401).")
                     return None # Error final untuk refresh ini
             
             error_msg = response.get("message", "Unknown error") if isinstance(response, dict) else "Non-dict/No response"
             log_level_retry = "WARNING" if attempt < retries - 1 else "ERROR"
-            self.log_account_specific(masked_address, "", level=log_level_retry, status_msg=f"Refresh Token Gagal (attempt {attempt+1}/{retries}): {error_msg}{'. Retry...' if attempt < retries -1 else '. Gagal Final.'}")
+            self.log_account_specific(masked_address, "", level=log_level_retry, status_msg=f"Refresh Token Failed (attempt {attempt+1}/{retries}): {error_msg}{'. Retrying...' if attempt < retries -1 else '. Final failure.'}")
             if attempt < retries - 1:
                 await asyncio.sleep(5)
             else:
@@ -284,7 +284,7 @@ class NaorisProtocolAutomation:
                 return response
             error_msg = response.get("message", "Unknown error") if isinstance(response, dict) else "Non-dict/No response"
             log_level_retry = "WARNING" if attempt < retries - 1 else "ERROR"
-            self.log_account_specific(masked_address, "", level=log_level_retry, status_msg=f"Get Wallet Details Gagal (attempt {attempt+1}/{retries}): {error_msg}{'. Retry...' if attempt < retries -1 else '. Gagal Final.'}")
+            self.log_account_specific(masked_address, "", level=log_level_retry, status_msg=f"Get Wallet Details Failed (attempt {attempt+1}/{retries}): {error_msg}{'. Retrying...' if attempt < retries -1 else '. Final failure.'}")
             if attempt < retries - 1:
                 await asyncio.sleep(5)
             else:
@@ -296,7 +296,7 @@ class NaorisProtocolAutomation:
         payload_dict = {"walletAddress": original_address, "url": "naorisprotocol.network"}
         payload_str = json.dumps(payload_dict)
         headers = {"Authorization": f"Bearer {access_token}"}
-        proxy_info_str = proxy if proxy else "Tidak Digunakan"
+        proxy_info_str = proxy if proxy else "Not Used"
 
         for attempt in range(retries):
             response = await self._request("POST", url, headers=headers, data=payload_str, proxy=proxy)
@@ -304,17 +304,17 @@ class NaorisProtocolAutomation:
                 if response.get("message") == "url saved successfully":
                     return True # Sukses
             elif isinstance(response, dict) and response.get("status_code") == 409:
-                self.log_account_specific(masked_address, "", level="INFO", proxy_info=proxy_info_str, status_msg="URL sudah ada di whitelist.")
+                self.log_account_specific(masked_address, "", level="INFO", proxy_info=proxy_info_str, status_msg="URL already in whitelist.")
                 return True # Dianggap sukses jika sudah ada
 
             error_msg = response.get("message", "Unknown error") if isinstance(response, dict) else "Non-dict/No response"
             log_level_retry = "WARNING" if attempt < retries - 1 else "ERROR"
-            self.log_account_specific(masked_address, "", level=log_level_retry, status_msg=f"Add Whitelist Gagal (attempt {attempt+1}/{retries}): {error_msg}{'. Retry...' if attempt < retries -1 else '. Gagal Final.'}")
+            self.log_account_specific(masked_address, "", level=log_level_retry, status_msg=f"Add Whitelist Failed (attempt {attempt+1}/{retries}): {error_msg}{'. Retrying...' if attempt < retries -1 else '. Final failure.'}")
             if attempt < retries - 1:
                 await asyncio.sleep(5)
-            else: # Gagal setelah semua retry
+            else: # Failed after all retries
                  return False
-        return False # Default jika loop selesai tanpa sukses
+        return False # Default if the loop completes without success
         
     async def toggle_device_activation(self, masked_address: str, original_address: str, device_hash: int, access_token: str, state: str, proxy: Optional[str], retries: int = 3) -> Optional[str]:
         url = f"{self.base_api_url}/sec-api/api/switch"
@@ -325,9 +325,9 @@ class NaorisProtocolAutomation:
         for attempt in range(retries):
             response = await self._request("POST", url, headers=headers, data=payload_str, proxy=proxy)
             
-            if isinstance(response, str): # Sukses jika string
+            if isinstance(response, str): # Success when response is a string
                 return response.strip()
-            # Jika bukan string, pasti ada masalah atau respons tidak diharapkan
+            # If not a string, something went wrong or response was unexpected
             elif isinstance(response, dict) and response.get("error"):
                 error_msg = response.get("message", "Unknown error")
             elif isinstance(response,dict): # Dict tapi bukan error dari _request (misal, API mengembalikan JSON saat kita harapkan string)
@@ -336,10 +336,10 @@ class NaorisProtocolAutomation:
                 error_msg = "No response or unknown response type"
 
             log_level_retry = "WARNING" if attempt < retries - 1 else "ERROR"
-            self.log_account_specific(masked_address, "", level=log_level_retry, status_msg=f"Toggle Activation ({state}) Gagal (attempt {attempt+1}/{retries}): {error_msg}{'. Retry...' if attempt < retries -1 else '. Gagal Final.'}")
+            self.log_account_specific(masked_address, "", level=log_level_retry, status_msg=f"Toggle Activation ({state}) Failed (attempt {attempt+1}/{retries}): {error_msg}{'. Retrying...' if attempt < retries -1 else '. Final failure.'}")
             if attempt < retries - 1:
                 await asyncio.sleep(5)
-            else: # Gagal setelah semua retry
+            else: # Failed after all retries
                 return None
         return None
 
@@ -356,7 +356,7 @@ class NaorisProtocolAutomation:
             
             error_msg = response.get("message", "Unknown error") if isinstance(response, dict) else "Non-dict/No response"
             log_level_retry = "WARNING" if attempt < retries - 1 else "ERROR"
-            self.log_account_specific(masked_address, "", level=log_level_retry, status_msg=f"Initiate Message Prod. Gagal (attempt {attempt+1}/{retries}): {error_msg}{'. Retry...' if attempt < retries -1 else '. Gagal Final.'}")
+            self.log_account_specific(masked_address, "", level=log_level_retry, status_msg=f"Initiate Message Prod. Failed (attempt {attempt+1}/{retries}): {error_msg}{'. Retrying...' if attempt < retries -1 else '. Final failure.'}")
             if attempt < retries - 1:
                 await asyncio.sleep(5)
             else:
@@ -370,31 +370,31 @@ class NaorisProtocolAutomation:
         for attempt in range(retries):
             response = await self._request("POST", url, headers=headers, json_payload={}, proxy=proxy)
             
-            if isinstance(response, str) and response.strip() == "Ping Success!!": # Sukses jika string ini
+            if isinstance(response, str) and response.strip() == "Ping Success!!": # Success if this exact string
                 return True
-            # Handle jika 410 adalah sukses (seperti di sc2)
+            # Handle case where status 410 is also a success (as in sc2)
             elif isinstance(response, dict) and response.get("status_code") == 410 and \
                  isinstance(response.get("response_text"), str) and \
                  response.get("response_text","").strip() == "Ping Success!!":
                 return True
-            # Jika bukan string sukses, atau bukan 410 sukses, maka itu error atau respons tak dikenal
+            # If not the success string or 410 case, treat as error or unknown response
             elif isinstance(response, dict) and response.get("error"):
                 error_msg = response.get("message", "Unknown error")
                 status_code = response.get("status_code")
-            elif isinstance(response,dict): # Dict tapi bukan error dari _request
+            elif isinstance(response,dict): # Dict but not an error from _request
                  error_msg = f"Unexpected dict response: {response}"
                  status_code = "N/A"
-            else: # None atau tipe lain
+            else: # None or other types
                 error_msg = "No response or unknown response type"
                 status_code = "N/A"
 
 
             status_code_info = f"(status: {status_code})" if status_code != "N/A" else ""
             log_level_retry = "WARNING" if attempt < retries - 1 else "ERROR"
-            self.log_account_specific(masked_address, "", level=log_level_retry, status_msg=f"Perform Ping Gagal (attempt {attempt+1}/{retries}){status_code_info}: {error_msg}{'. Retry...' if attempt < retries -1 else '. Gagal Final.'}")
+            self.log_account_specific(masked_address, "", level=log_level_retry, status_msg=f"Perform Ping Failed (attempt {attempt+1}/{retries}){status_code_info}: {error_msg}{'. Retrying...' if attempt < retries -1 else '. Final failure.'}")
             if attempt < retries - 1:
                 await asyncio.sleep(5)
-            else: # Gagal setelah semua retry
+            else: # Failed after all retries
                 return False
         return False
 
@@ -404,15 +404,15 @@ class NaorisProtocolAutomation:
         else:
             proxy = proxy_to_use if use_proxy_flag else None
         
-        proxy_info_str = proxy if proxy else "Tidak Digunakan"
+        proxy_info_str = proxy if proxy else "Not Used"
 
         token_data = await self.generate_token(masked_address, original_address, proxy)
         if token_data and "token" in token_data and "refreshToken" in token_data:
             self.access_tokens[original_address] = token_data["token"]
             self.refresh_tokens[original_address] = token_data["refreshToken"]
-            # Pesan sukses generate token akan dicetak oleh generate_token jika berhasil di sana,
-            # atau kita bisa cetak di sini juga. Sesuai contoh, "Generate Token Berhasil" ada.
-            self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=proxy_info_str, status_msg="Generate Token Berhasil.")
+            # Success message is printed by generate_token if it succeeds,
+            # or we can log it here as well. Following the example, "Generate Token Succeeded" is used.
+            self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=proxy_info_str, status_msg="Generate Token Succeeded.")
             return {"token": token_data["token"], "refreshToken": token_data["refreshToken"]}
         else:
             # Pesan error sudah dicetak oleh generate_token
@@ -424,29 +424,29 @@ class NaorisProtocolAutomation:
         await asyncio.sleep(initial_delay_minutes * 60)
         while True:
             if original_address not in self.refresh_tokens:
-                self.log_account_specific(masked_address, "Refresh token tidak ada, mencoba generate token baru.", level="WARNING")
+                self.log_account_specific(masked_address, "No refresh token found, trying to generate a new one.", level="WARNING")
                 await self.process_generate_new_token(masked_address, original_address, use_proxy_flag)
                 if original_address not in self.refresh_tokens: # Jika masih gagal setelah coba generate
-                    self.log_account_specific(masked_address, "Gagal mendapatkan refresh token, skip periodic refresh untuk siklus ini.", level="ERROR")
-                    await asyncio.sleep(5 * 60) # Tunggu sebelum coba lagi dari awal
-                    continue # Lanjutkan loop while True
+                    self.log_account_specific(masked_address, "Failed to obtain refresh token, skipping periodic refresh for this cycle.", level="ERROR")
+                    await asyncio.sleep(5 * 60) # Wait before trying again from the start
+                    continue # Continue the while True loop
             
             proxy = self.get_next_proxy_for_account(original_address) if use_proxy_flag else None
-            proxy_info_str = proxy if proxy else "Tidak Digunakan"
+            proxy_info_str = proxy if proxy else "Not Used"
             
-            self.log_account_specific(masked_address, "Mencoba refresh token...", level="DEBUG")
+            self.log_account_specific(masked_address, "Attempting to refresh token...", level="DEBUG")
             refreshed_token_data = await self.refresh_token_api(masked_address, original_address, self.refresh_tokens[original_address], proxy, use_proxy_flag)
             
             if refreshed_token_data and "token" in refreshed_token_data and "refreshToken" in refreshed_token_data:
                 self.access_tokens[original_address] = refreshed_token_data["token"]
                 self.refresh_tokens[original_address] = refreshed_token_data["refreshToken"]
-                self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=proxy_info_str, status_msg="Refresh Token Berhasil.")
+                self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=proxy_info_str, status_msg="Refresh Token Succeeded.")
             else:
                 # Pesan error/warning sudah dari refresh_token_api atau process_generate_new_token di dalamnya
                 # Pastikan token dihapus jika refresh gagal total agar siklus berikutnya coba generate dari awal
                 if original_address in self.access_tokens: del self.access_tokens[original_address]
                 if original_address in self.refresh_tokens: del self.refresh_tokens[original_address]
-                self.log_account_specific(masked_address, "Refresh token gagal dan token lama dihapus. Akan mencoba generate baru di siklus berikutnya.", level="WARNING")
+                self.log_account_specific(masked_address, "Refresh token failed and old token removed. Will attempt to generate a new one next cycle.", level="WARNING")
 
 
             await asyncio.sleep(30 * 60) # Interval refresh
@@ -455,28 +455,28 @@ class NaorisProtocolAutomation:
         await asyncio.sleep(initial_delay_minutes * 60)
         while True:
             if original_address not in self.access_tokens:
-                self.log_account_specific(masked_address, "Access token tidak ada, skip get wallet details.", level="WARNING")
+                self.log_account_specific(masked_address, "No access token, skipping get wallet details.", level="WARNING")
                 await asyncio.sleep(5 * 60)
                 continue
 
             proxy = self.get_next_proxy_for_account(original_address) if use_proxy_flag else None
-            proxy_info_str = proxy if proxy else "Tidak Digunakan"
-            self.log_account_specific(masked_address, "Mengambil detail wallet...", level="DEBUG")
+            proxy_info_str = proxy if proxy else "Not Used"
+            self.log_account_specific(masked_address, "Fetching wallet details...", level="DEBUG")
             details = await self.get_wallet_details(masked_address, original_address, self.access_tokens[original_address], proxy)
             
             if isinstance(details, dict) and not details.get("error") and "message" in details :
                 total_earnings = details["message"].get("totalEarnings", "N/A")
-                self.log_account_specific(masked_address, "", level="INFO", proxy_info=proxy_info_str, status_msg=f"Total Pendapatan: {total_earnings} PTS")
+                self.log_account_specific(masked_address, "", level="INFO", proxy_info=proxy_info_str, status_msg=f"Total Earnings: {total_earnings} PTS")
             elif isinstance(details, dict) and details.get("error"):
                 response_text = details.get("response_text", "")
                 status_code = details.get("status_code")
-                if status_code == 401 or (response_text and "Invalid token" in response_text): # Cek response_text jika ada
-                    self.log_account_specific(masked_address, "", level="WARNING", proxy_info=proxy_info_str, status_msg="Token tidak valid saat ambil detail wallet.")
+                if status_code == 401 or (response_text and "Invalid token" in response_text):
+                    self.log_account_specific(masked_address, "", level="WARNING", proxy_info=proxy_info_str, status_msg="Token invalid when fetching wallet details.")
                     if original_address in self.access_tokens: del self.access_tokens[original_address] # Hapus token agar di-generate ulang
                 else: # Error lain
-                    self.log_account_specific(masked_address, "", level="ERROR", proxy_info=proxy_info_str, status_msg=f"Gagal ambil detail wallet: {details.get('message')}")
+                    self.log_account_specific(masked_address, "", level="ERROR", proxy_info=proxy_info_str, status_msg=f"Failed to fetch wallet details: {details.get('message')}")
             else: # Respons tidak dikenal
-                self.log_account_specific(masked_address, "", level="WARNING", proxy_info=proxy_info_str, status_msg="Gagal mengambil detail wallet (respons tidak dikenal).")
+                self.log_account_specific(masked_address, "", level="WARNING", proxy_info=proxy_info_str, status_msg="Failed to fetch wallet details (unknown response).")
             
             await asyncio.sleep(15 * 60) # Interval cek detail
 
@@ -484,27 +484,27 @@ class NaorisProtocolAutomation:
         masked_address = self._mask_address(original_address)
         
         print(C_SEPARATOR + Style.BRIGHT + "-" * 60 + Style.RESET_ALL)
-        # Header akun sekarang menggunakan self.log agar timestamp dan format levelnya konsisten
-        self.log(f"{C_INFO}[AKUN]{Style.RESET_ALL} {C_INFO}{masked_address}{Style.RESET_ALL}", level="INFO")
+        # Account header now uses self.log so the timestamp and level format are consistent
+        self.log(f"{C_INFO}[ACCOUNT]{Style.RESET_ALL} {C_INFO}{masked_address}{Style.RESET_ALL}", level="INFO")
         print(C_SEPARATOR + Style.BRIGHT + "-" * 60 + Style.RESET_ALL)
 
         if original_address not in self.access_tokens or original_address not in self.refresh_tokens:
-            self.log_account_specific(masked_address, "Token tidak ditemukan. Memulai proses pembuatan token...", level="INFO")
+            self.log_account_specific(masked_address, "Token not found. Starting token generation...", level="INFO")
             if not await self.process_generate_new_token(masked_address, original_address, use_proxy_flag):
-                self.log_account_specific(masked_address, "Gagal total membuat token awal. Tidak dapat melanjutkan.", level="ERROR")
+                self.log_account_specific(masked_address, "Completely failed to create initial token. Cannot continue.", level="ERROR")
                 return # Hentikan task ini untuk akun ini
 
         # Whitelist (setelah token dipastikan ada)
         if original_address in self.access_tokens: # Pastikan token ada sebelum whitelist
             proxy_for_whitelist = self.get_next_proxy_for_account(original_address) if use_proxy_flag else None
-            proxy_info_str_whitelist = proxy_for_whitelist if proxy_for_whitelist else "Tidak Digunakan"
-            self.log_account_specific(masked_address, "Menambahkan ke whitelist...", level="DEBUG")
+            proxy_info_str_whitelist = proxy_for_whitelist if proxy_for_whitelist else "Not Used"
+            self.log_account_specific(masked_address, "Adding to whitelist...", level="DEBUG")
             
             if await self.add_to_whitelist(masked_address, original_address, self.access_tokens[original_address], proxy_for_whitelist):
-                self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=proxy_info_str_whitelist, status_msg="Berhasil ditambahkan/sudah ada di whitelist.")
+                self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=proxy_info_str_whitelist, status_msg="Successfully added/already in whitelist.")
             # else: # Pesan error/warning sudah dari add_to_whitelist
         else:
-            self.log_account_specific(masked_address, "Token tidak tersedia, tidak dapat menambahkan ke whitelist.", level="WARNING")
+            self.log_account_specific(masked_address, "Token not available, cannot add to whitelist.", level="WARNING")
 
 
         ping_interval_seconds = 60
@@ -517,69 +517,69 @@ class NaorisProtocolAutomation:
         
         while True: # Loop utama operasi akun
             if original_address not in self.access_tokens: # Jika token hilang di tengah jalan
-                self.log_account_specific(masked_address, "Access token hilang, mencoba regenerate...", level="WARNING")
+                self.log_account_specific(masked_address, "Access token missing, trying to regenerate...", level="WARNING")
                 if not await self.process_generate_new_token(masked_address, original_address, use_proxy_flag):
-                    self.log_account_specific(masked_address, "Gagal regenerate token. Melewatkan siklus ini.", level="ERROR")
-                    await asyncio.sleep(60) # Tunggu sebelum coba lagi
-                    continue # Kembali ke awal loop while True
+                    self.log_account_specific(masked_address, "Failed to regenerate token. Skipping this cycle.", level="ERROR")
+                    await asyncio.sleep(60) # Wait before trying again
+                    continue # Return to the start of the while True loop
             
             current_time = asyncio.get_event_loop().time()
             # Dapatkan proxy untuk siklus operasi ini
             current_op_proxy = self.get_next_proxy_for_account(original_address) if use_proxy_flag else None
-            current_op_proxy_info = current_op_proxy if current_op_proxy else "Tidak Digunakan"
+            current_op_proxy_info = current_op_proxy if current_op_proxy else "Not Used"
             
-            perform_actions_after_activation = False # Flag apakah tindakan inti (ping/initiate) boleh dilakukan
+            perform_actions_after_activation = False # Flag indicating whether core actions (ping/initiate) may run
 
-            # --- Pemeriksaan dan Proses Aktivasi ---
+            # --- Activation Check and Process ---
             if current_time - last_activation_check_time > activation_check_interval_seconds:
-                self.log_account_specific(masked_address, "Memeriksa status aktivasi...", level="DEBUG")
-                # Selalu coba matikan dulu untuk memastikan state bersih, kecuali jika API tidak mengizinkan atau error
+                self.log_account_specific(masked_address, "Checking activation status...", level="DEBUG")
+                # Always try deactivating first to ensure a clean state unless the API disallows it or errors
                 deactivate_response = await self.toggle_device_activation(masked_address, original_address, device_hash, self.access_tokens[original_address], "OFF", current_op_proxy)
                 
                 if deactivate_response is not None and deactivate_response in ["Session ended and daily usage updated", "No action needed", "Session not found to end"]:
-                    self.log_account_specific(masked_address, "", level="INFO", proxy_info=current_op_proxy_info, status_msg=f"Status Deaktivasi: {deactivate_response}. Mencoba aktivasi ON...")
+                    self.log_account_specific(masked_address, "", level="INFO", proxy_info=current_op_proxy_info, status_msg=f"Deactivation Status: {deactivate_response}. Attempting to activate ON...")
                     
                     activate_response = await self.toggle_device_activation(masked_address, original_address, device_hash, self.access_tokens[original_address], "ON", current_op_proxy)
                     if activate_response is not None and activate_response == "Session started":
-                        self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=current_op_proxy_info, status_msg="Aktivasi Perangkat (ON) Berhasil.")
+                        self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=current_op_proxy_info, status_msg="Device Activation (ON) Succeeded.")
                         perform_actions_after_activation = True
                     elif activate_response is not None and activate_response == "Session already active for this device":
-                         self.log_account_specific(masked_address, "", level="INFO", proxy_info=current_op_proxy_info, status_msg="Aktivasi Perangkat (ON): Sudah Aktif.")
-                         perform_actions_after_activation = True # Jika sudah aktif, tetap lakukan tindakan
-                    elif activate_response is not None: # Ada respons tapi bukan sukses
-                        self.log_account_specific(masked_address, "", level="ERROR", proxy_info=current_op_proxy_info, status_msg=f"Aktivasi Perangkat (ON) Gagal. Respons: {activate_response}")
-                    else: # activate_response is None (error parah)
-                         self.log_account_specific(masked_address, "", level="ERROR", proxy_info=current_op_proxy_info, status_msg="Aktivasi Perangkat (ON) Gagal (tidak ada respons).")
+                         self.log_account_specific(masked_address, "", level="INFO", proxy_info=current_op_proxy_info, status_msg="Device Activation (ON): Already Active.")
+                         perform_actions_after_activation = True # If already active, still perform actions
+                    elif activate_response is not None: # Response received but not success
+                        self.log_account_specific(masked_address, "", level="ERROR", proxy_info=current_op_proxy_info, status_msg=f"Device Activation (ON) Failed. Response: {activate_response}")
+                    else: # activate_response is None (severe error)
+                         self.log_account_specific(masked_address, "", level="ERROR", proxy_info=current_op_proxy_info, status_msg="Device Activation (ON) Failed (no response).")
 
-                elif deactivate_response is not None: # Gagal matikan tapi ada respons
-                    self.log_account_specific(masked_address, "", level="ERROR", proxy_info=current_op_proxy_info, status_msg=f"Deaktivasi (OFF) Gagal: {deactivate_response}. Aktivasi ON tidak dilanjutkan.")
-                else: # Gagal matikan dan tidak ada respons
-                    self.log_account_specific(masked_address, "", level="ERROR", proxy_info=current_op_proxy_info, status_msg="Deaktivasi (OFF) Gagal (tidak ada respons). Aktivasi ON tidak dilanjutkan.")
+                elif deactivate_response is not None: # Failed to deactivate but response received
+                    self.log_account_specific(masked_address, "", level="ERROR", proxy_info=current_op_proxy_info, status_msg=f"Deactivation (OFF) Failed: {deactivate_response}. Activation ON not continued.")
+                else: # Failed to deactivate and no response
+                    self.log_account_specific(masked_address, "", level="ERROR", proxy_info=current_op_proxy_info, status_msg="Deactivation (OFF) Failed (no response). Activation ON not continued.")
                 last_activation_check_time = current_time
-            else: # Belum waktunya cek aktivasi, asumsikan state sebelumnya masih valid
-                 if original_address in self.access_tokens : # Minimal token ada
+            else: # Not time to check activation yet, assume previous state still valid
+                 if original_address in self.access_tokens : # At minimum token exists
                     perform_actions_after_activation = True
 
 
-            # --- Tindakan Inti (Ping & Initiate Message) ---
+            # --- Core Actions (Ping & Initiate Message) ---
             if perform_actions_after_activation:
                 # Initiate Message Production
                 if current_time - last_initiate_msg_time > initiate_msg_interval_seconds :
-                    self.log_account_specific(masked_address, "Mengirim initiate message production...", level="DEBUG")
+                    self.log_account_specific(masked_address, "Sending initiate message production...", level="DEBUG")
                     if await self.initiate_message_production(masked_address, original_address, device_hash, self.access_tokens[original_address], current_op_proxy):
-                        self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=current_op_proxy_info, status_msg="Initiate Message Production Berhasil.")
+                        self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=current_op_proxy_info, status_msg="Initiate Message Production Succeeded.")
                     # else: # Pesan error sudah dari fungsi initiate_message_production
                     last_initiate_msg_time = current_time
                 
                 # Perform Ping
                 if current_time - last_ping_time > ping_interval_seconds:
-                    self.log_account_specific(masked_address, "Melakukan ping...", level="DEBUG")
+                    self.log_account_specific(masked_address, "Performing ping...", level="DEBUG")
                     if await self.perform_ping(masked_address, original_address, self.access_tokens[original_address], current_op_proxy):
-                        self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=current_op_proxy_info, status_msg="Ping Berhasil.")
+                        self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=current_op_proxy_info, status_msg="Ping Succeeded.")
                     # else: # Pesan error sudah dari fungsi perform_ping
                     last_ping_time = current_time
 
-            await asyncio.sleep(30) # Jeda utama antar siklus pengecekan di loop utama
+            await asyncio.sleep(30) # Main pause between cycles in the main loop
 
     async def run_bot(self):
         self.clear_terminal()
@@ -587,7 +587,7 @@ class NaorisProtocolAutomation:
 
         accounts = self.load_accounts_from_file()
         if not accounts:
-            self.log("Tidak ada akun yang dimuat. Bot berhenti.", level="ERROR")
+            self.log("No accounts loaded. Bot stopping.", level="ERROR")
             return
 
         use_proxy_flag = self.ask_use_proxy()
@@ -595,10 +595,10 @@ class NaorisProtocolAutomation:
         if use_proxy_flag:
             await self.load_proxies_from_local_file()
             if not self.proxies:
-                self.log("Tidak ada proxy yang tersedia di 'proxies.txt'. Melanjutkan tanpa proxy.", level="WARNING")
+                self.log("No proxies available in 'proxies.txt'. Continuing without proxy.", level="WARNING")
                 use_proxy_flag = False # Set ulang flag jika tidak ada proxy
 
-        self.log(f"Memulai proses untuk {len(accounts)} akun...", level="INFO")
+        self.log(f"Starting process for {len(accounts)} accounts...", level="INFO")
 
         tasks = []
         for account_data in accounts:
@@ -606,7 +606,7 @@ class NaorisProtocolAutomation:
             try:
                 device_hash = int(str(account_data["deviceHash"]))
             except ValueError:
-                self.log(f"Akun dengan alamat {C_WARNING}{self._mask_address(original_address)}{C_ERROR} memiliki deviceHash tidak valid: {C_WARNING}{account_data['deviceHash']}{C_ERROR}. Akun ini dilewati.", level="ERROR")
+                self.log(f"Account with address {C_WARNING}{self._mask_address(original_address)}{C_ERROR} has an invalid deviceHash: {C_WARNING}{account_data['deviceHash']}{C_ERROR}. Skipping this account.", level="ERROR")
                 continue
             
             masked_address = self._mask_address(original_address)
@@ -616,22 +616,22 @@ class NaorisProtocolAutomation:
             tasks.append(asyncio.create_task(self.periodic_refresh_token_task(masked_address, original_address, use_proxy_flag)))
             tasks.append(asyncio.create_task(self.periodic_wallet_details_task(masked_address, original_address, use_proxy_flag)))
             
-            await asyncio.sleep(1) # Jeda singkat antar start task akun agar tidak membanjiri API sekaligus
+            await asyncio.sleep(1) # Short delay between starting tasks to avoid flooding the API
 
         if tasks:
             await asyncio.gather(*tasks)
         else:
-            self.log("Tidak ada tugas yang valid yang dibuat untuk akun.", level="WARNING")
+            self.log("No valid tasks were created for accounts.", level="WARNING")
 
 if __name__ == "__main__":
     bot = NaorisProtocolAutomation()
     try:
         asyncio.run(bot.run_bot())
     except KeyboardInterrupt:
-        bot.log("Bot dihentikan oleh pengguna (KeyboardInterrupt).", level="INFO")
+        bot.log("Bot stopped by user (KeyboardInterrupt).", level="INFO")
     except Exception as e:
-        bot.log(f"Terjadi error tidak terduga di level utama: {e}", level="ERROR")
+        bot.log(f"Unexpected error at top level: {e}", level="ERROR")
         import traceback
-        traceback.print_exc() # Cetak traceback untuk debug error tak terduga
+        traceback.print_exc() # Print traceback to debug unexpected errors
     finally:
         bot.log("Bot Finished.", level="INFO")
