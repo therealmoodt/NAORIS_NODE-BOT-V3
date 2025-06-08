@@ -116,6 +116,8 @@ class NaorisProtocolAutomation:
                     try:
                         acc["deviceHash"] = int(str(acc["deviceHash"]))
                         valid_accounts.append(acc)
+                        if "token" in acc:
+                            print(f"Token for {self._mask_address(acc['Address'])}: {acc['token']}")
                     except ValueError:
                         self.log(f"Akun ke-{acc_idx+1} memiliki deviceHash tidak valid (harus integer): {C_WARNING}{acc.get('deviceHash')}{C_ERROR}", level="ERROR")
                 else:
