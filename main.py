@@ -87,12 +87,14 @@ class NaorisProtocolAutomation:
         log_color = level_color_map.get(level.upper(), C_INFO)
         level_str = level.upper().ljust(5)
 
-        full_message = message
+        base_message = f"{message} for [ACCOUNT] {masked_address}" if message else f"[ACCOUNT] {masked_address}"
         if proxy_info and status_msg:
-            full_message = f"Proxy: {proxy_info} | Status: {status_msg}"
+            full_message = f"{base_message} | Proxy: {proxy_info} | Status: {status_msg}"
         elif status_msg:
-             full_message = f"Status: {status_msg}"
-        
+            full_message = f"{base_message} | Status: {status_msg}"
+        else:
+            full_message = base_message
+
         print(f"{C_TEXT}[{timestamp}]{Style.RESET_ALL} {log_color}[{level_str}]{Style.RESET_ALL} {log_color}{full_message}{Style.RESET_ALL}", flush=True)
 
 
@@ -412,7 +414,7 @@ class NaorisProtocolAutomation:
             self.refresh_tokens[original_address] = token_data["refreshToken"]
             # Success message is printed by generate_token if it succeeds,
             # or we can log it here as well. Following the example, "Generate Token Succeeded" is used.
-            self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=proxy_info_str, status_msg="Generate Token Succeeded.")
+            self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=proxy_info_str, status_msg=f"Generate Token Succeeded. Token: {token_data['token']}")
             return {"token": token_data["token"], "refreshToken": token_data["refreshToken"]}
         else:
             # Pesan error sudah dicetak oleh generate_token
@@ -440,7 +442,7 @@ class NaorisProtocolAutomation:
             if refreshed_token_data and "token" in refreshed_token_data and "refreshToken" in refreshed_token_data:
                 self.access_tokens[original_address] = refreshed_token_data["token"]
                 self.refresh_tokens[original_address] = refreshed_token_data["refreshToken"]
-                self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=proxy_info_str, status_msg="Refresh Token Succeeded.")
+                self.log_account_specific(masked_address, "", level="SUCCESS", proxy_info=proxy_info_str, status_msg=f"Refresh Token Succeeded. New Token: {refreshed_token_data['token']}")
             else:
                 # Pesan error/warning sudah dari refresh_token_api atau process_generate_new_token di dalamnya
                 # Pastikan token dihapus jika refresh gagal total agar siklus berikutnya coba generate dari awal
