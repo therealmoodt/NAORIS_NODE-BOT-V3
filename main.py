@@ -54,7 +54,7 @@ class NaorisProtocolAutomation:
             "+------------------------------------------------------------+",
             "|                                                            |",
             "|            NAORIS PROTOCOL AUTOMATION BOT v2.0             |",
-            "|                     @AirdropFamilyIDN                      |",   
+            "|                      Upgrade by moodt                      |",
             "|                                                            |",
             "+------------------------------------------------------------+"
         ]
