@@ -96,6 +96,11 @@ Before running the bot you need to prepare two configuration files in the same d
 6.  **Wallet Details**: Checks wallet details (total earnings) periodically (default every 15 minutes after an initial 1-minute delay).
 7.  All main operations (activation, ping, initiate message) run in a main loop with delays between cycles. Tasks for refreshing the token and checking wallet details run in parallel with their own intervals.
 
+## 📈 Improvement Log
+
+* 🔎 **Token Logging**: Displays each account's token when loaded and whenever wallet details are fetched.
+* 💰 **Total Wallet Balance**: After retrieving wallet details for all accounts, prints the combined balance across nodes.
+
 ## ⚠️ Disclaimer
 
 * This bot is provided as is. **Use at your own risk (Do With Your Own Risk - DWYOR).**
